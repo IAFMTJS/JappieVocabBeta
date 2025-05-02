@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>JAPVOC</title>
+<style>
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 30px 15px 60px;
+    text-align: center;
+    background: #f9faff;
+    color: #222;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #quiz-container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    border-radius: 10px;
+    padding: 20px 25px 35px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+  }
+  h2 {
+    margin-top: 0;
+    font-weight: 700;
+    color: #004a99;
+  }
+  button {
+    font-size: 16px;
+    padding: 10px 20px;
+    margin: 4px;
+    border: none;
+    border-radius: 6px;
+    background-color: #3071a9;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  button:disabled {
+    background-color: #aaa;
+    cursor: default;
+  }
+  input[type="text"], select {
+    font-size: 16px;
+    padding: 8px 10px;
+    margin: 10px 4px 20px;
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+    width: calc(100% - 28px);
+    max-width: 280px;
+  }
+  #category-buttons {
+    margin: 20px 0;
+  }
+  #category-buttons button.category-btn {
+    background-color: #4caf50;
+    border-radius: 5px;
+    min-width: 86px;
+    margin: 3px 6px;
+  }
+  #category-buttons button.category-btn.active {
+    background-color: #007BFF;
+  }
+  #category-buttons button.category-btn:hover:not(.active) {
+    background-color: #45a049;
+  }
+  #scoreboardBtn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #007BFF;
+    padding: 10px 16px;
+    border-radius: 5px;
+    color: white;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+  #scoreboardBtn:hover {
+    background-color: #0056b3;
+  }
+  #homeBtn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+  #homeBtn:hover {
+    background-color: #0056b3;
+  }
+  #hintButton {
+    background-color: #ff9800;
+    margin-top: 6px;
+    border-radius: 5px;
+    font-weight: 600;
+  }
+  #hintButton:hover {
+    background-color: #e68a00;
+  }
+  #scoreboard {
+    margin-top: 60px;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  #scoreList {
+    list-style-type: none;
+    padding: 0;
+    margin: 15px 0 0;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  #scoreList li {
+    padding: 10px 15px;
+    margin: 5px auto;
+    background-color: #e1e1e1;
+    border-radius: 5px;
+    font-size: 18px;
+    max-width: 300px;
+  }
+  #start-screen {
+    margin-bottom: 10px;
+  }
+  #quiz {
+    margin-top: 10px;
+  }
+  #question {
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  #options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  #options button {
+    min-width: 140px;
+    border-radius: 6px;
+  }
+  #feedback {
+    font-weight: 700;
+    min-height: 28px;
+    margin-bottom: 15px;
+    font-size: 18px;
+  }
+  #progress-container {
+    width: 100%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  #progress-bar {
+    height: 100%;
+    background-color: #4caf50;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  #result {
+    font-size: 22px;
+    font-weight: 700;
+    color: #004a99;
+    min-height: 54px;
+    margin-top: 15px;
+  }
+  #restartBtn {
+    margin-top: 15px;
+    display: none;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 414px) {
+    body {
+      padding: 20px 12px 50px;
+    }
+    #quiz-container {
+      padding: 15px 15px 30px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #options button {
+      min-width: 120px;
+      font-size: 14px;
+      padding: 9px 16px;
+    }
+    input[type="text"] {
+      max-width: 100%;
+      width: 100%;
+    }
+    #category-buttons button.category-btn {
+      min-width: 75px;
+      font-size: 14px;
+      margin: 3px 4px;
+      padding: 9px 12px;
+    }
+    button {
+      font-size: 15px;
+      padding: 10px 15px;
+    }
+  }
+</style>
+</head>
+<body>
+<button id="homeBtn" onclick="goHome()" style="display:none;">Home</button>
+<button id="scoreboardBtn" onclick="showScoreboard()">Scorebord</button>
+<button id="hintButton" style="display:none;">Hint</button>
+
+<div id="scoreboard" style="display:none;">
+  <h2>Scorebord</h2>
+  <ul id="scoreList"></ul>
+  <button onclick="goHome()">Terug naar Start</button>
+</div>
+
+<div id="quiz-container">
+  <h2>Welkom bij de Japanse quiz!</h2>
+  <div id="start-screen">
+    <div>
+      <label for="username" style="font-weight:600;">Naam:</label><br />
+      <input type="text" id="username" placeholder="Vul je naam in" autocomplete="off" />
+    </div>
+
+    <div id="category-buttons" aria-label="Categorie knoppen">
+      <button type="button" class="category-btn active" data-category="eten">Eten</button>
+      <button type="button" class="category-btn" data-category="dieren">Dieren</button>
+      <button type="button" class="category-btn" data-category="kleuren">Kleuren</button>
+      <button type="button" class="category-btn" data-category="familie">Familie</button>
+    </div>
+
+    <div>
+      <label for="difficulty" style="font-weight:600;">Moeilijkheid:</label><br />
+      <select id="difficulty" aria-label="Moeilijkheid kiezen">
+        <option value="makkelijk">Makkelijk</option>
+        <option value="gemiddeld" selected>Gemiddeld</option>
+        <option value="moeilijk">Moeilijk</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="answerCount" style="font-weight:600;">Aantal Antwoorden:</label><br />
+      <select id="answerCount" aria-label="Aantal antwoord opties kiezen">
+        <option value="2">2 Antwoorden</option>
+        <option value="4" selected>4 Antwoorden</option>
+        <option value="6">6 Antwoorden</option>
+      </select>
+    </div>
+
+    <button id="startBtn" onclick="startQuiz()" aria-label="Start quiz">Start Quiz</button>
+  </div>
+
+  <div id="quiz" style="display:none;">
+    <div id="question" aria-live="polite"></div>
+    <div id="options" role="list" aria-label="Antwoord opties"></div>
+    <div id="progress-container" aria-label="Voortgang">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="feedback" aria-live="assertive"></div>
+    <button id="nextQuestionBtn" onclick="nextQuestion()" style="display:none;">Volgende vraag</button>
+  </div>
+
+  <div id="result" style="display:none;"></div>
+
+  <button id="restartBtn" onclick="restartQuiz()">Opnieuw</button>
+</div>
+
+<script>
+  // Data bank
+  const wordBank = {
+    eten: [
+      { kana: "りんご", romaji: "ringo", nl: "appel", hint: "Een fruit dat vaak rood of groen is en een belangrijk onderdeel van het spreekwoord 'An apple a day keeps the doctor away.'" },
+      { kana: "みかん", romaji: "mikan", nl: "mandarijn", hint: "Een klein citrusfruit met een gemakkelijke schil om te pellen, vaak gegeten in de winter." },
+      { kana: "さくらんぼ", romaji: "sakuranbo", nl: "kers", hint: "Dit fruit komt in het seizoen van de lente, en heeft een pit die je eruit moet halen voordat je het eet." },
+      { kana: "バナナ", romaji: "banana", nl: "banaan", hint: "Een geel fruit met een schil die je gemakkelijk kunt afpellen. Het is een favoriete snack voor sporters." },
+      { kana: "ぶどう", romaji: "budou", nl: "druif", hint: "Een klein, rond fruit dat je kunt eten of gebruiken om wijn van te maken." },
+      { kana: "にんじん", romaji: "ninjin", nl: "wortel", hint: "Een oranje groente die vaak gegeten wordt in salades of als snack, goed voor je ogen." },
+      { kana: "じゃがいも", romaji: "jagaimo", nl: "aardappel", hint: "Dit voedzame knolgewas wordt vaak gekookt of gefrituurd en is een hoofdbestanddeel van veel gerechten zoals friet." },
+      { kana: "とうもろこし", romaji: "toumorokoshi", nl: "maïs", hint: "Dit gele graan komt vaak in lange kolven, en is een veelvoorkomend voedsel in de zomer." },
+      { kana: "きゅうり", romaji: "kyuuri", nl: "komkommer", hint: "Een groene groente die vaak rauw gegeten wordt in salades, bekend om zijn verfrissende smaak." },
+      { kana: "トマト", romaji: "tomato", nl: "tomaat", hint: "Een vrucht die vaak als groente wordt gebruikt, en bekend staat om zijn rode kleur en sappige textuur." },
+      { kana: "なす", romaji: "nasu", nl: "aubergine", hint: "Deze groente heeft een paarse schil en wordt vaak gebakken of gepureerd in gerechten zoals moussaka." },
+      { kana: "ピーマン", romaji: "piiman", nl: "paprika", hint: "Deze groente komt in verschillende kleuren, zoals rood, groen en geel, en is een belangrijke smaakmaker in gerechten." },
+      { kana: "おにぎり", romaji: "onigiri", nl: "rijstbal", hint: "Een traditionele Japanse snack van rijst, vaak omhuld met zeewier en gevuld met verschillende smaken." },
+      { kana: "ラーメン", romaji: "ramen", nl: "ramen", hint: "Een populair Japans gerecht bestaande uit noedels in een bouillon, vaak geserveerd met vlees en groenten." },
+      { kana: "すし", romaji: "sushi", nl: "sushi", hint: "Een Japanse lekkernij van rijst gecombineerd met vis of groenten, vaak geserveerd met zeewier." },
+      { kana: "てんぷら", romaji: "tenpura", nl: "tempura", hint: "Een gerecht waarbij vis of groenten in een lichte deegkorst worden gebakken, typisch voor de Japanse keuken." },
+      { kana: "うどん", romaji: "udon", nl: "udonnoedels", hint: "Dikke Japanse noedels die vaak geserveerd worden in een bouillon." },
+      { kana: "おちゃ", romaji: "ocha", nl: "thee", hint: "Een veel gedronken drank, vaak geserveerd bij maaltijden in Japan." },
+      { kana: "みそしる", romaji: "misoshiru", nl: "miso-soep", hint: "Een soep die vaak als bijgerecht in Japanse maaltijden wordt geserveerd, gemaakt van miso en bouillon." },
+      { kana: "やきとり", romaji: "yakitori", nl: "gegrilde kip", hint: "Een populaire Japanse snack van kip die aan spiesjes is geregen en gegrild." }
+    ],
+    dieren: [
+      { kana: "ねこ", romaji: "neko", nl: "kat", hint: "Dit dier wordt vaak als huisdier gehouden, heeft een speels karakter, en houdt van jagen op muizen." },
+      { kana: "いぬ", romaji: "inu", nl: "hond", hint: "De beste vriend van de mens, bekend om zijn loyaliteit en vriendschap." },
+      { kana: "うさぎ", romaji: "usagi", nl: "konijn", hint: "Dit dier staat bekend om zijn lange oren en het vermogen om snel te springen." },
+      { kana: "とり", romaji: "tori", nl: "vogel", hint: "Dieren die vliegen en eieren leggen, zoals de duif of de arend." },
+      { kana: "さる", romaji: "saru", nl: "aap", hint: "Dit dier is bekend om zijn speelse gedrag en zijn vermogen om in bomen te klimmen." },
+      { kana: "くま", romaji: "kuma", nl: "beer", hint: "Een groot zoogdier dat vaak in bossen leeft en houdt van honing." },
+      { kana: "きつね", romaji: "kitsune", nl: "vos", hint: "Dit dier is bekend om zijn sluwheid en heeft een vacht van vaak roodbruine kleur." },
+      { kana: "りす", romaji: "risu", nl: "eekhoorn", hint: "Dit kleine dier verzamelt noten en leeft vaak in bomen." },
+      { kana: "さめ", romaji: "same", nl: "haai", hint: "Een roofdier dat in de oceaan leeft en bekend staat om zijn scherpe tanden." },
+      { kana: "へび", romaji: "hebi", nl: "slang", hint: "Dit dier beweegt zich zonder poten en kan gevaarlijk zijn door zijn giftige beet." },
+      { kana: "とかげ", romaji: "tokage", nl: "hagedis", hint: "Een reptiel dat vaak in zonnige gebieden leeft en snel beweegt." },
+      { kana: "ぞう", romaji: "zou", nl: "olifant", hint: "Dit is het grootste landdier, herkenbaar aan zijn lange slurf en grote oren." },
+      { kana: "きりん", romaji: "kirin", nl: "giraf", hint: "Met zijn lange nek en vlekken is dit dier een van de hoogste op aarde." },
+      { kana: "ひつじ", romaji: "hitsuji", nl: "schaap", hint: "Dit dier wordt vaak gehouden voor wol en is een symbool van vrede." },
+      { kana: "やぎ", romaji: "yagi", nl: "geit", hint: "Dit dier is bekend om zijn speelse karakter en zijn vermogen om op rotsachtige terreinen te klimmen." },
+      { kana: "いのしし", romaji: "inoshishi", nl: "wild zwijn", hint: "Een varken dat in bossen leeft, vaak gezien als wild dier." },
+      { kana: "しろくま", romaji: "shirokuma", nl: "witte beer", hint: "Dit dier leeft in koude klimaten en heeft een dikke vacht om zichzelf warm te houden." },
+      { kana: "あらいぐま", romaji: "araiguma", nl: "wasbeer", hint: "Een dier dat bekend staat om zijn 'handen' die lijken op die van een mens, en zijn nieuwsgierige gedrag." },
+      { kana: "たぬき", romaji: "tanuki", nl: "wasbeer", hint: "Dit dier wordt vaak afgebeeld in Japanse folklore, met een komisch karakter." }
+    ],
+    kleuren: [
+      { kana: "あか", romaji: "aka", nl: "rood", hint: "De kleur van een veel voorkomende vrucht die we als appel kennen, of de kleur van passie en liefde." },
+      { kana: "あお", romaji: "ao", nl: "blauw", hint: "De kleur van de oceaan of de lucht op een heldere dag." },
+      { kana: "きいろ", romaji: "kiiro", nl: "geel", hint: "De kleur van de zon en veel bloemen, zoals de zonnebloem." },
+      { kana: "みどり", romaji: "midori", nl: "groen", hint: "De kleur van gras en bomen in de lente." },
+      { kana: "むらさき", romaji: "murasaki", nl: "paars", hint: "De kleur van lavendel en sommige druiven." },
+      { kana: "しろ", romaji: "shiro", nl: "wit", hint: "De kleur van sneeuw en melk." },
+      { kana: "くろ", romaji: "kuro", nl: "zwart", hint: "De kleur van de nacht of een zwarte kat." },
+      { kana: "オレンジ", romaji: "orenji", nl: "oranje", hint: "De kleur van een citrusfruit en de herfstbladeren." },
+      { kana: "ピンク", romaji: "pinku", nl: "roze", hint: "De kleur van veel bloemen, zoals rozen, of een zachte tint van rood." },
+      { kana: "ちゃいろ", romaji: "chairo", nl: "bruin", hint: "De kleur van chocolade, koffie en veel dieren, zoals beren." },
+      { kana: "はいいろ", romaji: "haiiro", nl: "grijs", hint: "De kleur van regenachtige wolken of het oppervlak van een steen." },
+      { kana: "きん", romaji: "kin", nl: "goud", hint: "De kleur van het edelmetaal dat vaak gebruikt wordt in sieraden." },
+      { kana: "ぎん", romaji: "gin", nl: "zilver", hint: "De kleur van het edelmetaal dat wordt gebruikt voor munten en sieraden." }
+    ],
+    familie: [
+      { kana: "おとうさん", romaji: "otousan", nl: "vader (formeel)", hint: "De man die verantwoordelijk is voor het gezin. Hij zorgt voor zijn kinderen en beschermt zijn familie." },
+      { kana: "おかあさん", romaji: "okaasan", nl: "moeder (formeel)", hint: "De vrouw die haar kinderen draagt en voor hen zorgt, vaak de primaire zorgdrager in een gezin." },
+      { kana: "あに", romaji: "ani", nl: "ouder broer", hint: "De oudere mannelijke sibling in een gezin, die vaak een beschermende rol speelt voor zijn jongere broers en zussen." },
+      { kana: "あね", romaji: "ane", nl: "ouder zus", hint: "De oudere vrouwelijke sibling in een gezin, die vaak een mentor is voor haar jongere broers en zussen." },
+      { kana: "おとうと", romaji: "otouto", nl: "jongere broer", hint: "De jongere mannelijke sibling in een gezin." },
+      { kana: "いもうと", romaji: "imouto", nl: "jongere zus", hint: "De jongere vrouwelijke sibling in een gezin." },
+      { kana: "おじいさん", romaji: "ojiisan", nl: "grootvader", hint: "De vader van je ouders, vaak de oudere man die veel wijsheid met zich meebrengt." },
+      { kana: "おばあさん", romaji: "obaasan", nl: "grootmoeder", hint: "De moeder van je ouders, vaak een oudere vrouw die liefdevolle zorg biedt." },
+      { kana: "おじさん", romaji: "ojisan", nl: "oom", hint: "De broer van je vader of moeder, vaak een oudere man in je familie." },
+      { kana: "おばさん", romaji: "obasan", nl: "tante", hint: "De zus van je vader of moeder, vaak een vrouwelijke ouderfiguur." },
+      { kana: "いとこ", romaji: "itoko", nl: "neef/nicht", hint: "De kinderen van je tante of oom, dus je familieleden die niet je broers of zussen zijn." },
+      { kana: "おい", romaji: "oi", nl: "neef", hint: "De zoon van je tante of oom." },
+      { kana: "めい", romaji: "mei", nl: "nicht", hint: "De dochter van je tante of oom." },
+      { kana: "はは", romaji: "haha", nl: "moeder (informeel)", hint: "De vrouw die je hebt gebaard of die voor je zorgt. Vaak een moederlijke figuur." },
+      { kana: "ちち", romaji: "chichi", nl: "vader (informeel)", hint: "De man die je heeft grootgebracht of die je verzorgt. Vaak een figuur van bescherming." },
+      { kana: "あいじん", romaji: "aijin", nl: "partner", hint: "De persoon waarmee je een romantische relatie hebt, zoals een man of vrouw." },
+      { kana: "こども", romaji: "kodomo", nl: "kind", hint: "Een jong persoon die afhankelijk is van zijn ouders voor zorg en opvoeding." },
+      { kana: "おんな", romaji: "onna", nl: "vrouw", hint: "Een volwassene van het vrouwelijke geslacht, vaak degene die wordt geassocieerd met zorg, liefde en nurturering." },
+      { kana: "おとこ", romaji: "otoko", nl: "man", hint: "Een volwassene van het mannelijke geslacht, vaak de persoon die in veel samenlevingen als de 'ondersteuner' wordt gezien." }
+    ]
+  };
+
+  // Variables
+  let username = "";
+  let currentCategory = "eten";
+  let currentDifficulty = "gemiddeld";
+  let currentAnswerCount = 4;
+  let quizQuestions = [];
+  let currentQuestionIndex = 0;
+  let score = 0;
+  let currentAnswer = "";
+
+  // Category buttons to set category ONLY (no dropdown)
+  const categoryButtons = document.querySelectorAll(".category-btn");
+  categoryButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      categoryButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentCategory = btn.dataset.category;
+    });
+  });
+
+  // Difficulty select
+  const difficultySelect = document.getElementById("difficulty");
+  difficultySelect.addEventListener("change", () => {
+    currentDifficulty = difficultySelect.value;
+  });
+
+  // Answer count select
+  const answerCountSelect = document.getElementById("answerCount");
+  answerCountSelect.addEventListener("change", () => {
+    currentAnswerCount = parseInt(answerCountSelect.value, 10);
+  });
+
+  // Shuffle function (Fisher-Yates)
+  function shuffle(array) {
+    for (let i = array.length -1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // Start quiz
+  function startQuiz() {
+    username = document.getElementById("username").value.trim();
+    if (!username) {
+      alert("Vul je naam in.");
+      return;
+    }
+    if (!currentCategory || !wordBank[currentCategory]) {
+      alert("Kies een geldige categorie.");
+      return;
+    }
+
+    // Prepare questions
+    quizQuestions = wordBank[currentCategory].slice();
+    shuffle(quizQuestions);
+
+    currentQuestionIndex = 0;
+    score = 0;
+
+    // UI: hide start, show quiz and home/hint btns
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("quiz").style.display = "block";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("restartBtn").style.display = "none";
+    document.getElementById("homeBtn").style.display = "inline-block";
+    document.getElementById("hintButton").style.display = "inline-block";
+    document.getElementById("scoreboard").style.display = "none";
+    document.getElementById("scoreboardBtn").style.display = "inline-block";
+
+    loadQuestion();
+  }
+
+  // Load question
+  function loadQuestion() {
+    if (currentQuestionIndex >= quizQuestions.length) {
+      endQuiz();
+      return;
+    }
+
+    const currentWord = quizQuestions[currentQuestionIndex];
+    currentAnswer = currentWord.nl;
+
+    let optionsCount = Math.min(currentAnswerCount, quizQuestions.length);
+    if (optionsCount < 2) optionsCount = 2;
+
+    // Options array always includes current word
+    const options = [currentWord];
+
+    // Fill options with distinct random entries
+    while (options.length < optionsCount) {
+      const randOpt = quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
+      if (!options.some(o => o.nl === randOpt.nl)) {
+        options.push(randOpt);
+      }
+    }
+
+    shuffle(options);
+
+    // Display question
+    const questionDiv = document.getElementById("question");
+    questionDiv.textContent = `Wat betekent "${currentWord.kana}" (${currentWord.romaji})?`;
+
+    // Display answer options as buttons
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+    options.forEach(option => {
+      const btn = document.createElement("button");
+      btn.textContent = option.nl;
+      btn.type = "button";
+      btn.setAttribute("aria-label", `Antwoord optie: ${option.nl}`);
+      btn.addEventListener("click", () => checkAnswer(option.nl));
+      optionsDiv.appendChild(btn);
+    });
+
+    // Reset feedback and next button
+    const feedbackDiv = document.getElementById("feedback");
+    feedbackDiv.textContent = "";
+    feedbackDiv.style.color = "transparent";
+
+    const nextBtn = document.getElementById("nextQuestionBtn");
+    nextBtn.style.display = "none";
+
+    updateProgressBar();
+  }
+
+  // Show hint function
+  function showHint() {
+    if (quizQuestions.length ===0 || currentQuestionIndex >= quizQuestions.length) {
+      alert("Geen hint beschikbaar.");
+      return;
+    }
+    alert("Hint: " + quizQuestions[currentQuestionIndex].hint);
+  }
+
+  document.getElementById("hintButton").addEventListener("click", showHint);
+
+  // Check answer
+  function checkAnswer(selected) {
+    const feedbackDiv = document.getElementById("feedback");
+    const nextBtn = document.getElementById("nextQuestionBtn");
+    const optionsButtons = document.querySelectorAll("#options button");
+
+    // Disable all buttons
+    optionsButtons.forEach(b => { b.disabled = true; });
+
+    if (selected === currentAnswer) {
+      score++;
+      feedbackDiv.innerText = "✅ Juist!";
+      feedbackDiv.style.color = "green";
+    } else {
+      feedbackDiv.innerText = `❌ Fout! Het juiste antwoord is: ${currentAnswer}`;
+      feedbackDiv.style.color = "red";
+    }
+
+    nextBtn.style.display = "inline-block";
+  }
+
+  // Next question
+  function nextQuestion() {
+    currentQuestionIndex++;
+    loadQuestion();
+  }
+
+  // Update progress bar
+  function updateProgressBar() {
+    const progressBar = document.getElementById("progress-bar");
+    const total = quizQuestions.length;
+    let pct = (total === 0) ? 0 : (currentQuestionIndex / total) * 100;
+    if(pct > 100) pct = 100;
+    progressBar.style.width = pct + "%";
+  }
+
+  // End quiz
+  function endQuiz() {
+    saveScore(username, score);
+    document.getElementById("quiz").style.display = "none";
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+    resultDiv.textContent = `Je score is: ${score} / ${quizQuestions.length}`;
+    document.getElementById("restartBtn").style.display = "inline-block";
+    document.getElementById("hintButton").style.display = "none";
+    document.getElementById("nextQuestionBtn").style.display = "none";
+    document.getElementById("homeBtn").style.display = "inline-block";
+    updateProgressBar();
+  }
+
+  // Restart quiz
+  function restartQuiz() {
+    document.getElementById("start-screen").style.display = "block";
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("restartBtn").style.display = "none";
+    document.getElementById("homeBtn").style.display = "none";
+    document.getElementById("hintButton").style.display = "none";
+    score = 0;
+    currentQuestionIndex = 0;
+    username = "";
+    document.getElementById("username").value = "";
+    updateProgressBar();
+
+    // Reset category buttons to default active (eten)
+    categoryButtons.forEach(b => b.classList.remove("active"));
+    const defaultCategoryButton = document.querySelector('.category-btn[data-category="eten"]');
+    if(defaultCategoryButton) defaultCategoryButton.classList.add("active");
+    currentCategory = "eten";
+
+    // Reset difficulty and answerCount selects
+    document.getElementById("difficulty").value = "gemiddeld";
+    currentDifficulty = "gemiddeld";
+    document.getElementById("answerCount").value = "4";
+    currentAnswerCount = 4;
+  }
+
+  // Save score to localStorage
+  function saveScore(user, sc) {
+    const scores = JSON.parse(localStorage.getItem("scores")) || [];
+    scores.push({ username: user, score: sc });
+    scores.sort((a,b) => b.score - a.score);
+    localStorage.setItem("scores", JSON.stringify(scores));
+  }
+
+  // Show scoreboard
+  function showScoreboard() {
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("restartBtn").style.display = "none";
+    document.getElementById("hintButton").style.display = "none";
+    document.getElementById("homeBtn").style.display = "inline-block";
+    document.getElementById("scoreboard").style.display = "block";
+
+    const scores = JSON.parse(localStorage.getItem("scores")) || [];
+    const scoreList = document.getElementById("scoreList");
+    scoreList.innerHTML = "";
+    if (scores.length === 0) {
+      const li = document.createElement("li");
+      li.textContent = "Geen scores gevonden.";
+      scoreList.appendChild(li);
+      return;
+    }
+    scores.forEach(({username, score}) => {
+      const li = document.createElement("li");
+      li.textContent = `${username}: ${score} punten`;
+      scoreList.appendChild(li);
+    });
+  }
+
+  // Go home (start screen)
+  function goHome() {
+    document.getElementById("start-screen").style.display = "block";
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("scoreboard").style.display = "none";
+    document.getElementById("restartBtn").style.display = "none";
+    document.getElementById("hintButton").style.display = "none";
+    document.getElementById("homeBtn").style.display = "none";
+    document.getElementById("username").value = "";
+    score = 0;
+    currentQuestionIndex = 0;
+    updateProgressBar();
+
+    // Reset category buttons to default active (eten)
+    categoryButtons.forEach(b => b.classList.remove("active"));
+    const defaultCategoryButton = document.querySelector('.category-btn[data-category="eten"]');
+    if(defaultCategoryButton) defaultCategoryButton.classList.add("active");
+    currentCategory = "eten";
+
+    // Reset difficulty and answerCount selects
+    document.getElementById("difficulty").value = "gemiddeld";
+    currentDifficulty = "gemiddeld";
+    document.getElementById("answerCount").value = "4";
+    currentAnswerCount = 4;
+  }
+</script>
+</body>
+</html>
